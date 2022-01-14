@@ -1,0 +1,40 @@
+version: '3.9'
+
+services:
+  web:
+    build:
+      context: ./
+      dockerfile: Dockerfile.prod
+    command: gunicorn --bind 0.0.0.0:8000 sellcar.wsgi:application
+    expose:
+      - 8000
+    volumes:
+      - static_volume:/home/app_cars/web/staticfiles
+      - pic_volume:/home/app_cars/web/pictures
+    env_file:
+      - ./.env.prod
+    depends_on:
+      - db
+  db:
+    image: postgres:9.6
+    volumes:
+      - cars_pg_data_prod:/var/lib/postgresql/data
+    env_file:
+      - ./.env.prod.db
+    ports:
+      - 5432:8000
+  nginx:
+    build: ./nginx
+    ports:
+    - 1337:80
+    volumes:
+    - static_volume:/home/app_cars/web/staticfiles
+    - pic_volume:/home/app_cars/web/pictures
+    depends_on:
+      - web
+
+
+volumes:
+  cars_pg_data_prod:
+  static_volume:
+  pic_volume:

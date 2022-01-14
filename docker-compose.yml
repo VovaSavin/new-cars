@@ -1,0 +1,29 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:9.6
+    volumes:
+      - cars_pg_data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=django_user
+      - POSTGRES_PASSWORD=django_pass
+      - POSTGRES_DB=django_cars
+    ports:
+      - 5432:8000
+  web:
+    build: .
+    command: >
+      sh -c "python /usr/src/cars_d/manage.py migrate &&
+             python /usr/src/cars_d/manage.py runserver 0.0.0.0:8000"
+    volumes:
+      - .:/usr/src/cars_d
+    ports:
+      - 8000:8000
+    env_file:
+      - ./.env.dev
+    depends_on:
+      - db
+
+volumes:
+  cars_pg_data:
